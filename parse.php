@@ -1,10 +1,3 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-
-  
-    <script>
 <?php
 
 include('simple_html_dom.php');
@@ -234,16 +227,3 @@ fwrite($jsonFile, $classes);
 fclose($jsonFile);
 
 file_put_contents('data/classes.php', '<?php $classes = ' . var_export($classes, true) . ';');
-    </script>
-
-</head>
-
-<body>
-
-
-</body>
-
-<footer>
-</footer>
-
-</html>
