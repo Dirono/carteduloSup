@@ -19381,7 +19381,7 @@ parsko([{
 	"teacherNumberRatings": "none"
 }, {
 	"classID": 1299,
-	"sectionNumber": "",
+	"sectionNumber": "123",
 	"courseCode": "AP",
 	"className": " Activity Period",
 	"teacherName": "AP",
@@ -19389,8 +19389,8 @@ parsko([{
 	"teacherLastName": "AP",
 	"type": "none",
 	"allottedTimes": [
-		["T", 1230, 1400],
-		["H", 1230, 1400]
+		["T", 1245, 1415],
+		["H", 1245, 1415]
 	],
 	"teacherRating": "none",
 	"teacherNumberRatings": "none"
