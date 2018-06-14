@@ -1,245 +1,175 @@
-<!DOCTYPE html>
 <html>
 
 <head>
 
-  
+    <!--Foundation CSS-->
+    <link rel="stylesheet" href="vendor/css/foundation.min.css">
+
+    <!--Autocomplete CSS-->
+    <link rel="stylesheet" href="vendor/autocomplete/easy-autocomplete.css">
+
+    <!--Icon CSS-->
+    <link rel="stylesheet" href="vendor/icons/foundation-icons.css">
+
+    <!--Custom CSS-->
+    <link rel="stylesheet" href="style.css">
+
+    <title>
+        Marianopolis Schedule Maker
+    </title>
+
+    <!--Favicon-->
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.png" />
+
+    <!--GA-->
     <script>
-<?php
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+                    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
-include('simple_html_dom.php');
-include( '/data/classRatings.php' );
-function filter($row){
-	if($row=="DAY/TIMES"||
-	   $row=="\fSCHEDULE OF CLASSES - WINTER 2017"||
-	   $row=='SECTION'||
-	   $row=='COURSE NUMBER'||
-	   $row=='COURSE TITLE/TEACHER' ||
-	   $row == '300.11 - Music & Social Science'||
-	   $row=='200.11 - Music & Science' ||
-	   $row== '300.A0 - Social Science / Commerce Courses' ||
-	   $row =='500.11 - Music & Arts Literature and Communications' ||
-	   $row=='CR1 - ALC - CREATION' ||
-	   $row=='EX1 - ALC - EXPLORATIONS' ||
-	   $row=='500.11 - Creative Arts And Music' ||
-	   $row=='500.AE - Arts, Literature and Communication' ||
-	   $row=='700.B0 - Liberals Arts Courses'){
-		return false;
-	}
-	else{
-		return true;
-	}
-}
-
-function stripAccents($str) {
-	return strtr(utf8_decode($str), utf8_decode('àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ'), 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
-}
-
-//Get text file and create new array for each line
-$txtFile = file_get_contents('data/RawCourseDataUpdated.txt');
-$rows = explode ("\n", $txtFile);
-
-//Remove empty lines and make keys sequential
-$rows = array_filter($rows);
-$rows = array_filter($rows, 'filter');
-$rows = array_values($rows);
-
-
-/***CREATE CLASSES ***/
-//Create class to store each classes' data in an array
-class ClassData{
-	public $data = array();
-}
-
-//Create object class for each College Class to store all relevant information
-class CollegeClass{
-	public $classID = 0;
-	public $sectionNumber = '00001';
-	public $courseCode = '000-AAA-00';
-	public $className = 'Introduction to Letters';
-	public $teacherName = 'John Doe';
-	public $teacherFirstName = "John";
-	public $teacherLastName = "Doe";
-	public $type = 'Complementary';
-	public $allottedTimes = array();
-	public $teacherRating = '-';
-	public $teacherNumberRatings = 'No Ratings';
-}
-$classDatas = array();
-foreach($rows as $key=>$row) {
-	if ( substr( $row, 0, 3 ) == '000' ) {
-		$classData = new ClassData;
-		array_push( $classData->data, $row );
-		for ( $i = 1; $i <= 20; $i ++ ) {
-			if ( substr( $rows[ $key + $i ], 0, 3 ) != '000' ) {
-				if ( $key + $i < count($rows)-1 ) {
-					array_push( $classData->data, $rows[ $key + $i ] );
-				} else {
-					break;
-				}
-			}else{
-				break;
-			}
-		}
-		array_push( $classDatas, $classData );
-	}
-}
-//var_dump($classDatas);
-
-//Create array to store all class objects
-$classes = array();
-
-//Loop over each object that stored unedited information about each class to reconfigure the data
-foreach($classDatas as $classData){
-
-	$class = new CollegeClass();
-	//Create array to store different strings each representing the class name since class names are sometimes split in 2
-	$classNames = array();
-	//Array to store the different days the class occurs
-	$days = array();
-	//Array to store the different times the class occurs
-	$times = array();
-	//Check whether it's the first date entry
-	$first = 0;
-	$first2 = 0;
-	//Loop over each element of the array of the data class to add the information to the College Class object
-	foreach ($classData->data as $key=>$data ){
-		//Section
-		if(substr( $data, 0, 3 ) == '000' ){
-			$class->sectionNumber = $classData->data[$key];
-		}
-		//Course Code
-		elseif ($key==1){
-			$class->courseCode = $classData->data[$key];
-			$firstPos = $key+1;
-		}
-		//Class Name
-//		elseif (substr($data, 0, 3) === strtoupper(substr($data, 0, 3)) & strlen($data)>6 & preg_match("/[a-z]/i", $data)) {
-//			array_push($classNames, $data );
-//		}
-		//Teacher Name
-		elseif (strpos($data, ',')!=false && $key!=$firstPos){
-			$class->teacherName = $data;
-			if ($first2==0){
-				$lastPos=$key-1;
-			}
-			$first2=1;
-		}
-		//Days
-		elseif (strlen($data)<=3 & $data === strtoupper($data) & preg_match("/^M|T|W|H|F|S$/", $data) & $data !='GYM' & $data!='TBA'){
-			array_push($days, $data);
-			if($first==0){
-				$class->teacherName = $classData->data[$key-1];
-				//$lastPos = $key-2;
-			}
-			$first = 1;
-		}
-		//Times
-		elseif (strlen($data) == 11 && !preg_match("/[a-z]/i", $data)){
-			array_push($times, $data);
-		}
-
-		//Concatenate each class name to get full class name
-
-	}
-	$class->className ='';
-	for ($i=$firstPos;$i<=$lastPos;$i++){
-		$class->className = $class->className.' '.$classData->data[$i];
-	}
-
-	//Create array for times
-	$class->allottedTimes=array();
-	//Loop over the array of dates
-	foreach($days as $key2=>$day){
-		//Loop over the letters of each element of the array, creating a new array for each letter with the start and end time
-		for ($i=0; $i<strlen($day); $i++){
-			array_push($class->allottedTimes, array(
-				substr($day, $i, 1),
-				intval(str_replace(':','',substr($times[$key2], 0, 5))),
-				intval(str_replace(':','',substr($times[$key2], 6, 5)))
-			));
-		}
-	}
-	array_push($classes,$class);
-}
-
-$classes = array_values( array_unique( $classes, SORT_REGULAR ) );
-
-for ($i=0;$i<count($classes);$i++){
-	$classes[$i]->classID = $i;
-}
-
-$teachersArray = array();
-$html = file_get_html('http://ca.ratemyteachers.com/marianopolis-college/38444-s');
-$teachers = $html->find('div.teacher');
-foreach ($teachers as $key=>$teacher){
-	$teacherName = $teacher->find('div.info h3.teacher_name a');
-	$teacherName = $teacherName[0]->innertext;
-	$teacherName = stripAccents(strtolower(substr($teacherName,1, strlen($teacherName)-2)));
-	$teacherRating = $teacher->find('div.score div.star-rating');
-	$teacherRating = $teacherRating[0]->title;
-	$teacherRating = floatval(substr($teacherRating,0,3));
-	$teacherNumberRating = $teacher->find('div.score div.rating_count');
-	$teacherNumberRating = $teacherNumberRating[0]->innertext;
-	$teacherBoth = array($teacherName,$teacherRating, $teacherNumberRating);
-	array_push($teachersArray, $teacherBoth);
-}
-
-foreach($classes as $class){
-	$teacherName = stripAccents(strtolower($class->teacherName));
-	$commaPos = strpos($teacherName, ', ');
-	$class->teacherFirstName = substr($teacherName, $commaPos+2, strlen($teacherName)-$commaPos);
-	$class->teacherLastName = substr($teacherName, 0, $commaPos);
-	if ($class->teacherFirstName =="theodore"){
-		$class->teacherFirstName = 'ted';
-	}
-	$firstNamePos = array_keys($teacherFirstNames,$class->teacherFirstName);
-	$lastNamePos = array_keys($teacherLastNames,$class->teacherLastName);
-	$common = array_values(array_intersect($firstNamePos, $lastNamePos));
-	if (count($common)!=0){
-		$class->teacherRating = strval(round($teacherRatings[$common[0]][2],2));
-		$class->teacherNumberRatings = $teacherRatings[$common[0]][3];
-	};
-
-}
-
-$classesCourseCodes = array();
-$classesNames = array();
-$classesTeachers = array();
-foreach ($classes as $class){
-	array_push($classesCourseCodes, $class->courseCode);
-	array_push($classesNames, $class->className);
-	array_push($classesTeachers, $class->teacherName);
-
-}
-foreach($classes as $class){
-	var_dump($class);
-}
-function createJSFile($array, $fileName){
-	$array = array_values( array_unique( $array, SORT_REGULAR ) );
-	$array = json_encode($array );
-	$jsonFile2 = fopen($fileName,'w');
-	fwrite($jsonFile2, $array);
-	fclose($jsonFile2);
-}
-
-
-createJSFile($classesCourseCodes, 'data/courseCode.js');
-createJSFile($classesTeachers, 'data/teacherName.js');
-createJSFile($classesNames, 'data/className.js');
-
-$classes = json_encode($classes);
-$jsonFile = fopen('data/classes.json','w');
-fwrite($jsonFile, $classes);
-fclose($jsonFile);
-
-file_put_contents('data/classes.php', '<?php $classes = ' . var_export($classes, true) . ';');
+        ga('create', 'UA-69201275-2', 'auto');
+        ga('send', 'pageview');
     </script>
 
 </head>
 
 <body>
 
+<!--Introduction Modal-->
+<div class="reveal warningReveal" data-reveal>
+    <h3>Updated for Fall Schedule</h3>
+    <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!--Show Save Code Modal-->
+<div class="reveal saveReveal" data-reveal>
+    <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!--Load Save Code Modal-->
+<div class="reveal loadReveal" data-reveal>
+    <h4>Enter your save code:</h4>
+    <h6>This will replace your current schedule with the one from your save code</h6>
+    <input class="loadSchedule-input" type="text">
+    <a href="" class="loadQuery-button large button">Load</a>
+    <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!--Export Schedule Modal-->
+<div class="reveal exportReveal" data-reveal>
+    <ul class="exportClasses">
+    </ul>
+    <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!--Instructions Modal-->
+<div class="reveal revealInstructions" id="exampleModal1" data-reveal>
+    <h3>Instructions</h3>
+    <ul>
+        <li>Choose how you want to search for a class (code, name, teacher) by selecting an option from the dropdown</li>
+        <li>Enter your search into the box under find class and hit enter or click on the search icon to search for classes</li>
+        <li>Click on the class options that appear to add them to your schedule</li>
+    </ul>
+    <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<!--Schedule Block-->
+<div class="expanded row">
+    <div class="large-9 collapse small-12 columns">
+        <table>
+
+            <!--Table Headers-->
+            <tr>
+                <th style="text-align: left;">Time</th>
+                <th>Monday</th>
+                <th>Tuesday</th>
+                <th>Wednesday</th>
+                <th>Thursday</th>
+                <th>Friday</th>
+            </tr>
+
+            <!--Table Body-->
+            <tr><td>8:15</td><td class="c0 r0"></td><td class="c1 r0"></td><td class="c2 r0"></td><td class="c3 r0"></td><td class="c4 r0"></td></tr><tr><td>8:45</td><td class="c0 r1"></td><td class="c1 r1"></td><td class="c2 r1"></td><td class="c3 r1"></td><td class="c4 r1"></td></tr><tr><td>9:15</td><td class="c0 r2"></td><td class="c1 r2"></td><td class="c2 r2"></td><td class="c3 r2"></td><td class="c4 r2"></td></tr><tr><td>9:45</td><td class="c0 r3"></td><td class="c1 r3"></td><td class="c2 r3"></td><td class="c3 r3"></td><td class="c4 r3"></td></tr><tr><td>10:15</td><td class="c0 r4"></td><td class="c1 r4"></td><td class="c2 r4"></td><td class="c3 r4"></td><td class="c4 r4"></td></tr><tr><td>10:45</td><td class="c0 r5"></td><td class="c1 r5"></td><td class="c2 r5"></td><td class="c3 r5"></td><td class="c4 r5"></td></tr><tr><td>11:15</td><td class="c0 r6"></td><td class="c1 r6"></td><td class="c2 r6"></td><td class="c3 r6"></td><td class="c4 r6"></td></tr><tr><td>11:45</td><td class="c0 r7"></td><td class="c1 r7"></td><td class="c2 r7"></td><td class="c3 r7"></td><td class="c4 r7"></td></tr><tr><td>12:15</td><td class="c0 r8"></td><td class="c1 r8"></td><td class="c2 r8"></td><td class="c3 r8"></td><td class="c4 r8"></td></tr><tr><td>12:45</td><td class="c0 r9"></td><td class="c1 r9"></td><td class="c2 r9"></td><td class="c3 r9"></td><td class="c4 r9"></td></tr><tr><td>13:15</td><td class="c0 r10"></td><td class="c1 r10"></td><td class="c2 r10"></td><td class="c3 r10"></td><td class="c4 r10"></td></tr><tr><td>13:45</td><td class="c0 r11"></td><td class="c1 r11"></td><td class="c2 r11"></td><td class="c3 r11"></td><td class="c4 r11"></td></tr><tr><td>14:15</td><td class="c0 r12"></td><td class="c1 r12"></td><td class="c2 r12"></td><td class="c3 r12"></td><td class="c4 r12"></td></tr><tr><td>14:45</td><td class="c0 r13"></td><td class="c1 r13"></td><td class="c2 r13"></td><td class="c3 r13"></td><td class="c4 r13"></td></tr><tr><td>15:15</td><td class="c0 r14"></td><td class="c1 r14"></td><td class="c2 r14"></td><td class="c3 r14"></td><td class="c4 r14"></td></tr><tr><td>15:45</td><td class="c0 r15"></td><td class="c1 r15"></td><td class="c2 r15"></td><td class="c3 r15"></td><td class="c4 r15"></td></tr><tr><td>16:15</td><td class="c0 r16"></td><td class="c1 r16"></td><td class="c2 r16"></td><td class="c3 r16"></td><td class="c4 r16"></td></tr><tr><td>16:45</td><td class="c0 r17"></td><td class="c1 r17"></td><td class="c2 r17"></td><td class="c3 r17"></td><td class="c4 r17"></td></tr><tr><td>17:15</td><td class="c0 r18"></td><td class="c1 r18"></td><td class="c2 r18"></td><td class="c3 r18"></td><td class="c4 r18"></td></tr><tr><td>17:45</td><td class="c0 r19"></td><td class="c1 r19"></td><td class="c2 r19"></td><td class="c3 r19"></td><td class="c4 r19"></td></tr><tr><td>18:15</td><td class="c0 r20"></td><td class="c1 r20"></td><td class="c2 r20"></td><td class="c3 r20"></td><td class="c4 r20"></td></tr><tr><td>18:45</td><td class="c0 r21"></td><td class="c1 r21"></td><td class="c2 r21"></td><td class="c3 r21"></td><td class="c4 r21"></td></tr><tr><td>19:15</td><td class="c0 r22"></td><td class="c1 r22"></td><td class="c2 r22"></td><td class="c3 r22"></td><td class="c4 r22"></td></tr><tr><td>19:45</td><td class="c0 r23"></td><td class="c1 r23"></td><td class="c2 r23"></td><td class="c3 r23"></td><td class="c4 r23"></td></tr>
+
+        </table>
+    </div>
+
+    <!--Right Colulmn-->
+    <div class="large-3 collapse right-column small-12 columns">
+        <div class="classOptions">
+
+            <!--Add Class Section-->
+            <div class="addClass">
+
+                <div class="row">
+
+                    <div class="large-5 collapse columns">
+                        <h5 class="findClass-title">Find Class</h5>
+                    </div>
+
+                    <!--Search Type Ooptions-->
+                    <div style="text-align: right" class="large-7 collapse columns">
+                        <select id="searchType">
+                            <option value="courseCode">Course Code</option>
+                            <option value="className">Class Name</option>
+                            <option value="teacherName">Teacher</option>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="row">
+                    <!--Search Field-->
+                    <input id="autocomplete" placeholder = "603-103-MQ" >
+                    <!--Search Icon-->
+                    <i class="search-magnifying-glass fi-magnifying-glass"></i>
+                </div>
+
+            </div>
+        </div>
+
+        <!--Additional Features-->
+        <div class="row">
+            <div class="large-4 collapse columns">
+                <a href="" class="saveButton button">Save Schedule</a>
+            </div>
+            <div class="large-4 collapse columns">
+                <a href="" class="loadButton secondary button">Load Schedule</a>
+            </div>
+            <div class="large-4 collapse columns">
+                <a href="" class="exportButton alert button">Export Schedule</a>
+            </div>
+        </div>
+
+        <a href="" class="instructionButton success expanded button">Instructions</a>
+
+    </div>
+
+</div>
+
+<!--Jquery-->
+<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+
+<!--Foundation JS-->
+<script src="vendor/js/vendor/foundation.min.js"></script>
+<script src="vendor/js/vendor/what-input.js"></script>
+
+<!--AutoComplete JS-->
+<script src="vendor/autocomplete/jquery.easy-autocomplete.min.js"></script>
+
+<!--Custom JS-->
+<script src="vendor/js/app.js"></script>
 
 </body>
 
