@@ -1,19 +1,4 @@
 parsko([{
-	"classID": 0,
-	"sectionNumber": "",
-	"courseCode": "AP",
-	"className": " Activity Period",
-	"teacherName": "AP",
-	"teacherFirstName": "AP",
-	"teacherLastName": "AP",
-	"type": "none",
-	"allottedTimes": [
-		["T", 1230, 1400],
-		["H", 1230, 1400]
-	],
-	"teacherRating": "none",
-	"teacherNumberRatings": "none"
-}, {
 	"classID": 1,
 	"sectionNumber": "00001",
 	"courseCode": "101-LCU-05",
@@ -19391,6 +19376,21 @@ parsko([{
 	"allottedTimes": [
 		["T", 1115, 1245],
 		["F", 1115, 1245]
+	],
+	"teacherRating": "none",
+	"teacherNumberRatings": "none"
+}, {
+	"classID": 1299,
+	"sectionNumber": "",
+	"courseCode": "AP",
+	"className": " Activity Period",
+	"teacherName": "AP",
+	"teacherFirstName": "AP",
+	"teacherLastName": "AP",
+	"type": "none",
+	"allottedTimes": [
+		["T", 1230, 1400],
+		["H", 1230, 1400]
 	],
 	"teacherRating": "none",
 	"teacherNumberRatings": "none"
