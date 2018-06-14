@@ -213,8 +213,6 @@ function getRandomColor() {
 
             $(document).on('click', '.theone', function(e){
             	var r = confirm("Are u sure u want to del this course?");
-            	if(r==true)
-            	{
             		var ind = this.id;
             		data[ind].allottedTimes.forEach(function(time) {
 
@@ -246,7 +244,6 @@ function getRandomColor() {
                     	timex[day][i] = 0;
                     }
                 });
-            	}
             	this.remove();
             });
         });
