@@ -1,5 +1,5 @@
 parsko([{
-	"classID": 0,
+	"classID": 1299,
 	"sectionNumber": "",
 	"courseCode": "AP",
 	"className": " Activity Period",
