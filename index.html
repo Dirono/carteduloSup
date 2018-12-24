@@ -22,6 +22,7 @@
             <div class="search-container">
                 <input type="text" placeholder="Search.." name="search" id="inputik">
                 <button type="submit" onclick="serko()"></button>
+                <!-- <button type="bttt" onclick="dimulencia()"></button> -->
             </div>
         </div>
         <div id="choicepan"></div>
@@ -73,11 +74,9 @@ for(var i = 0; i<27;i++)
 <script>
     var data = null;
 function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
+  var color = "hsl(" + 360 * Math.random() + ',' +
+                 (100 * Math.random()) + '%,' + 
+                 (59 + 20 * Math.random()) + '%)';
   return color;
 }
 
@@ -91,6 +90,106 @@ function getRandomColor() {
             var endTime = String(time[2]);
             endTime = endTime.substr(0, endTime.length - 2) + ':' + endTime.substr(-2, 2);
         });
+    }
+    var c = 0;
+    function addcourse(ind)
+    {
+
+                var check = true;
+                data[ind].allottedTimes.forEach(function(time) {
+                    var day;
+                        switch(time[0]) {
+                            case "M":
+                                day = 1;
+                                break;
+                            case "T":
+                                day = 2;
+                                break;
+                            case "W":
+                                day = 3;
+                                break;
+                            case "H":
+                                day = 4;
+                                break;
+                            case "F":
+                                day = 5;
+                                break;
+                            default:
+                                day = -1;
+                        }
+                    var startTime = ((time[1]-time[1]%100)*60/100+(time[1]%100)-8*60-15)/30+1;
+                    var endTime = ((time[2]-time[2]%100)*60/100+(time[2]%100)-8*60-15)/30+1;
+                    for (var i =startTime;i<endTime;i++) {
+                        if(timex[day][i]!=0)
+                        {
+                            check = false;
+                            break;
+                        }
+                    }
+                });
+                if(check==true)
+                {
+                    c++;
+                data[ind].allottedTimes.forEach(function(time) {
+
+                    var day;
+                        switch(time[0]) {
+                            case "M":
+                                day = 1;
+                                break;
+                            case "T":
+                                day = 2;
+                                break;
+                            case "W":
+                                day = 3;
+                                break;
+                            case "H":
+                                day = 4;
+                                break;
+                            case "F":
+                                day = 5;
+                                break;
+                            default:
+                                day = -1;
+                        }
+                    var startTime = ((time[1]-time[1]%100)*60/100+(time[1]%100)-8*60-15)/30+1;
+                    var endTime = ((time[2]-time[2]%100)*60/100+(time[2]%100)-8*60-15)/30+1;
+                    for (var i =startTime;i<endTime;i++) {
+                        timex[day][i] = ind+1;
+                    }
+                });
+                }
+    }
+    function removeCourse(ind)
+    {
+               data[ind].allottedTimes.forEach(function(time) {
+
+                    var day;
+                        switch(time[0]) {
+                            case "M":
+                                day = 1;
+                                break;
+                            case "T":
+                                day = 2;
+                                break;
+                            case "W":
+                                day = 3;
+                                break;
+                            case "H":
+                                day = 4;
+                                break;
+                            case "F":
+                                day = 5;
+                                break;
+                            default:
+                                day = -1;
+                        }
+                    var startTime = ((time[1]-time[1]%100)*60/100+(time[1]%100)-8*60-15)/30+1;
+                    var endTime = ((time[2]-time[2]%100)*60/100+(time[2]%100)-8*60-15)/30+1;
+                    for (var i =startTime;i<endTime;i++) {
+                        timex[day][i] = 0;
+                    }
+                });
     }
 
     function serko() {
@@ -247,6 +346,12 @@ function getRandomColor() {
             });
         });
     }
+    $(document).keypress(function(e) {
+    serko();
+});
+</script>
+<script>
+
 </script>
 <script src="data.js"></script>
 
